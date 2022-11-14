@@ -25,9 +25,45 @@ class _CostsPageState extends State<CostsPage> {
   static const TextStyle labelsStyling =
       TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 
-  Widget passengerCard(String passengerName, int mealage) {
+  static const InputDecoration smallInputDec = InputDecoration(
+      fillColor: Colors.white,
+      filled: true,
+      contentPadding: EdgeInsets.fromLTRB(4.0, 4.0, 12.0, 4.0),
+      border: OutlineInputBorder(),
+      hintText: '0');
+
+  Widget _passengerCard(String passengerName, int mealage) {
     return Container(
       child: Text(passengerName),
+    );
+  }
+
+  Widget _inputWithLabel(String labelText, String inputText) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Flexible(
+          flex: 2,
+          child: Text(
+            labelText,
+            style: labelsStyling,
+          ),
+        ),
+        Flexible(
+            flex: 1,
+            child: Row(
+              children: [
+                const Flexible(
+                    child: SizedBox(
+                  height: 30.0,
+                  width: 50.0,
+                  child: TextField(
+                      textAlign: TextAlign.right, decoration: smallInputDec),
+                )),
+                Text('   $inputText'),
+              ],
+            ))
+      ]),
     );
   }
 
@@ -109,33 +145,8 @@ class _CostsPageState extends State<CostsPage> {
               ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Flexible(
-                  child: Text(
-                    "Cena paliwa: ",
-                    style: labelsStyling,
-                  ),
-                ),
-                Flexible(child: Text("elko")),
-              ],
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Padding(
-                padding: EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  "Spalanie",
-                  style: labelsStyling,
-                ),
-              ),
-            ],
-          ),
+          _inputWithLabel("Cena paliwa:", "zł"),
+          _inputWithLabel("Spalanie:", "l/100km"),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
