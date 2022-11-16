@@ -1,9 +1,27 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'costs.dart';
 import 'calculate.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+class Passenger {
+  String id = "P_${Random().nextDouble()}";
+  String name;
+  double mealage = 0.0;
+
+  Passenger({required this.name, required this.mealage});
+}
+
+class AdditionalCost {
+  String id = "AC_${Random().nextDouble()}";
+  String name;
+  double price = 0.0;
+
+  AdditionalCost({required this.name, required this.price});
 }
 
 class MyApp extends StatelessWidget {
@@ -44,11 +62,47 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  // Fuel cost
-  double _fuelCost = 0.0;
-  void _updateFuelCost(double price) {
+  // Passengers list
+  final List<Passenger> passangers = [
+    Passenger(name: "Wiktor", mealage: 120),
+    Passenger(name: "Szymon", mealage: 80),
+    Passenger(name: "Adrian", mealage: 60)
+  ];
+  void _addPassenger(Passenger passenger) {
     setState(() {
-      _fuelCost = price;
+      passangers.add(passenger);
+    });
+  }
+
+  void _deletePassenger(String id) {
+    setState(() {
+      passangers.removeWhere((element) => element.id == id);
+    });
+  }
+
+  // Additional Costs list
+  final List<AdditionalCost> additionalCosts = [
+    AdditionalCost(name: "Autostrada", price: 150.0),
+    AdditionalCost(name: "Postój", price: 80.0),
+    AdditionalCost(name: "Stłuczka", price: 660.0)
+  ];
+  void _addAdditionalCost(AdditionalCost additionalCost) {
+    setState(() {
+      additionalCosts.add(additionalCost);
+    });
+  }
+
+  void _deleteAdditionalCost(String id) {
+    setState(() {
+      additionalCosts.removeWhere((element) => element.id == id);
+    });
+  }
+
+  // Fuel cost
+  double _fuelPrice = 0.0;
+  void _updateFuelPrice(double price) {
+    setState(() {
+      _fuelPrice = price;
     });
   }
 
@@ -70,11 +124,17 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Center(child: Text('Fuel: $_fuelCost , Comb: $_combustion')),
+        title: Center(child: Text(widget.title)),
       ),
       body: <Widget>[
         CostsPage(
-            updateFuelCost: _updateFuelCost,
+            passengers: passangers,
+            addPassenger: _addPassenger,
+            deletePassenger: _deletePassenger,
+            additionalCosts: additionalCosts,
+            addAdditionalCost: _addAdditionalCost,
+            deleteAdditionalCost: _deleteAdditionalCost,
+            updateFuelPrice: _updateFuelPrice,
             updateCombustion: _updateCombustion), // CostsPage
         const CalculatePage(passengers: passengers) // CalculatePage
       ].elementAt(_selectedIndex),

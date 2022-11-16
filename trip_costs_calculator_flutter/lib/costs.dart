@@ -1,13 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'main.dart';
+
 class CostsPage extends StatefulWidget {
-  const CostsPage({super.key, this.updateFuelCost, this.updateCombustion});
+  const CostsPage(
+      {super.key,
+      this.updateFuelPrice,
+      this.updateCombustion,
+      required this.passengers,
+      required this.addPassenger,
+      required this.deletePassenger,
+      required this.addAdditionalCost,
+      required this.deleteAdditionalCost,
+      required this.additionalCosts});
 
   // ignore: prefer_typing_uninitialized_variables
-  final updateFuelCost;
+  final updateFuelPrice;
   // ignore: prefer_typing_uninitialized_variables
   final updateCombustion;
+  // ignore: prefer_typing_uninitialized_variables
+  final List<Passenger> passengers;
+  // ignore: prefer_typing_uninitialized_variables
+  final addPassenger;
+  // ignore: prefer_typing_uninitialized_variables
+  final deletePassenger;
+  // ignore: prefer_typing_uninitialized_variables
+  final addAdditionalCost;
+  // ignore: prefer_typing_uninitialized_variables
+  final deleteAdditionalCost;
+  // ignore: prefer_typing_uninitialized_variables
+  final List<AdditionalCost> additionalCosts;
 
   @override
   State<CostsPage> createState() => _CostsPageState();
@@ -15,23 +38,41 @@ class CostsPage extends StatefulWidget {
 
 class _CostsPageState extends State<CostsPage> {
   // --------------------------- Functions & Variables
-  String passengerData = '';
-  int error = 0;
 
+  // Passenger add & delete
   void _onAddPassenger(String name, String mealage) {
     if (name != "" && double.parse(mealage) > 0) {
       setState(() {
-        passengerData = '$name $mealage';
-      });
-    } else {
-      setState(() {
-        error = error + 1;
+        widget.addPassenger(
+            Passenger(name: name, mealage: double.parse(mealage)));
       });
     }
   }
 
+  void _onDeletePassenger(String id) {
+    setState(() {
+      widget.deletePassenger(id);
+    });
+  }
+
+  // AdditionalCost add & delete
+  void _onAddAdditionalCost(String name, String price) {
+    if (name != "" && double.parse(price) > 0) {
+      setState(() {
+        widget.addAdditionalCost(
+            AdditionalCost(name: name, price: double.parse(price)));
+      });
+    }
+  }
+
+  void _onDeleteAdditionalCost(String id) {
+    setState(() {
+      widget.deleteAdditionalCost(id);
+    });
+  }
+
   void _onFuelCostChange(String value) {
-    widget.updateFuelCost(double.parse(value));
+    widget.updateFuelPrice(double.parse(value));
   }
 
   void _onCombustionChange(String value) {
@@ -57,7 +98,7 @@ class _CostsPageState extends State<CostsPage> {
 
   // --------------------------- Widgets
   Widget _complexInput(String placeholder, String suffix,
-      void Function(String fstValue, String sndValue) onAddClick) {
+      Function(String fstValue, String sndValue) onAddClick) {
     final fstInputController = TextEditingController();
     final sndInputController = TextEditingController();
 
@@ -109,8 +150,8 @@ class _CostsPageState extends State<CostsPage> {
     );
   }
 
-  Widget _universalCard(
-      String name, int value, String suffix, Function onDeleteClick) {
+  Widget _universalCard(String id, String name, double value, bool isPassenger,
+      Function(String id) onDeleteClick) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Container(
@@ -127,12 +168,13 @@ class _CostsPageState extends State<CostsPage> {
             Text(name),
             Row(
               children: [
-                Text('$value $suffix'),
+                Text(
+                    '${isPassenger ? value.toInt() : value} ${isPassenger ? "km" : "zł"}'),
                 IconButton(
                   color: Colors.black,
                   icon: const Icon(Icons.clear),
                   onPressed: () {
-                    onDeleteClick();
+                    onDeleteClick(id);
                   },
                 ),
               ],
@@ -172,6 +214,7 @@ class _CostsPageState extends State<CostsPage> {
         Flexible(
             flex: 1,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Flexible(
                     child: SizedBox(
@@ -218,23 +261,33 @@ class _CostsPageState extends State<CostsPage> {
               shrinkWrap: true,
               itemBuilder: (BuildContext context, int index) {
                 return Center(
-                    child: _universalCard("User", index, "km", () {}));
+                    child: _universalCard(
+                        widget.passengers[index].id,
+                        widget.passengers[index].name,
+                        widget.passengers[index].mealage,
+                        true,
+                        _onDeletePassenger));
               },
-              itemCount: 5,
+              itemCount: widget.passengers.length,
             ),
           ),
           _inputWithLabel("Cena paliwa:", "zł", _onFuelCostChange),
           _inputWithLabel("Spalanie:", "l/100km", _onCombustionChange),
           _simpleLabel("Koszty dodatkowe"),
-          _complexInput("Nazwa kosztu dodatkowego", " zł", _onAddPassenger),
-          Text('This is passanger data: $passengerData'),
-          Text('Number of errors: $error'),
+          _complexInput(
+              "Nazwa kosztu dodatkowego", " zł", _onAddAdditionalCost),
           ListView.builder(
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
-              return Center(child: _universalCard("User", index, "zł", () {}));
+              return Center(
+                  child: _universalCard(
+                      widget.additionalCosts[index].id,
+                      widget.additionalCosts[index].name,
+                      widget.additionalCosts[index].price,
+                      false,
+                      _onDeleteAdditionalCost));
             },
-            itemCount: 5,
+            itemCount: widget.additionalCosts.length,
           ),
         ],
       ),

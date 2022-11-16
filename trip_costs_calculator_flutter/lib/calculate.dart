@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
 
-class Passanger {
-  String name;
-  int fuelCost = 0;
-
-  Passanger(this.name, this.fuelCost);
-}
-
 class CalculatePage extends StatefulWidget {
   const CalculatePage({super.key, required this.passengers});
 
