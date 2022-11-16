@@ -52,6 +52,6 @@ class _CalculatePageState extends State<CalculatePage> {
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
-    return _listViewBody();
+    return SingleChildScrollView(child: _listViewBody());
   }
 }

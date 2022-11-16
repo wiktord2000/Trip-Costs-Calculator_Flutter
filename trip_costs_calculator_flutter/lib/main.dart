@@ -29,15 +29,6 @@ class MyHomePage extends StatefulWidget {
       {super.key,
       required this.title}); // Uwaga: Wywaliłem const, żebby passangers działało
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -45,22 +36,31 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // Page change functionality
   int _selectedIndex = 0;
-  static const List<int> passengers = <int>[5, 7, 4, 8, 5];
-
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-
-  static const List<Widget> _widgetOptions = <Widget>[
-    CostsPage(),
-    CalculatePage(passengers: passengers)
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
+
+  // Fuel cost
+  double _fuelCost = 0.0;
+  void _updateFuelCost(double price) {
+    setState(() {
+      _fuelCost = price;
+    });
+  }
+
+  // Combustion
+  double _combustion = 0.0;
+  void _updateCombustion(double combustion) {
+    setState(() {
+      _combustion = combustion;
+    });
+  }
+
+  static const List<int> passengers = <int>[5, 7, 4, 8, 5];
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +70,14 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Center(child: Text(widget.title)),
+        title: Center(child: Text('Fuel: $_fuelCost , Comb: $_combustion')),
       ),
-      body: _widgetOptions.elementAt(_selectedIndex),
+      body: <Widget>[
+        CostsPage(
+            updateFuelCost: _updateFuelCost,
+            updateCombustion: _updateCombustion), // CostsPage
+        const CalculatePage(passengers: passengers) // CalculatePage
+      ].elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(

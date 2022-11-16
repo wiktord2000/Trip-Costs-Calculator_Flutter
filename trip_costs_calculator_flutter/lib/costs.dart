@@ -1,26 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CostsPage extends StatefulWidget {
-  const CostsPage({super.key});
+  const CostsPage({super.key, this.updateFuelCost, this.updateCombustion});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  // ignore: prefer_typing_uninitialized_variables
+  final updateFuelCost;
+  // ignore: prefer_typing_uninitialized_variables
+  final updateCombustion;
 
   @override
   State<CostsPage> createState() => _CostsPageState();
 }
 
 class _CostsPageState extends State<CostsPage> {
-  void _onAddPassenger() {
-    setState(() {});
+  // --------------------------- Functions & Variables
+  String passengerData = '';
+  int error = 0;
+
+  void _onAddPassenger(String name, String mealage) {
+    if (name != "" && double.parse(mealage) > 0) {
+      setState(() {
+        passengerData = '$name $mealage';
+      });
+    } else {
+      setState(() {
+        error = error + 1;
+      });
+    }
   }
 
+  void _onFuelCostChange(String value) {
+    widget.updateFuelCost(double.parse(value));
+  }
+
+  void _onCombustionChange(String value) {
+    widget.updateCombustion(double.parse(value));
+  }
+
+  // --------------------------- Styling
   static TextStyle labelsStyling =
       const TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 
@@ -28,8 +46,7 @@ class _CostsPageState extends State<CostsPage> {
       fillColor: Colors.white,
       filled: true,
       contentPadding: EdgeInsets.fromLTRB(4.0, 4.0, 12.0, 4.0),
-      border: OutlineInputBorder(),
-      hintText: '0');
+      border: OutlineInputBorder());
 
   static BoxShadow basicCardShadow = BoxShadow(
     color: Colors.grey.withOpacity(0.1),
@@ -38,7 +55,12 @@ class _CostsPageState extends State<CostsPage> {
     offset: const Offset(0, 0), // changes position of shadow
   );
 
-  Widget _complexInput(String placeholder, String suffix, Function onAddClick) {
+  // --------------------------- Widgets
+  Widget _complexInput(String placeholder, String suffix,
+      void Function(String fstValue, String sndValue) onAddClick) {
+    final fstInputController = TextEditingController();
+    final sndInputController = TextEditingController();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 4.0),
       decoration: BoxDecoration(
@@ -53,6 +75,7 @@ class _CostsPageState extends State<CostsPage> {
           Flexible(
             flex: 2,
             child: TextField(
+              controller: fstInputController,
               decoration: InputDecoration(
                   border: InputBorder.none, hintText: placeholder),
             ),
@@ -60,19 +83,25 @@ class _CostsPageState extends State<CostsPage> {
           Flexible(
             flex: 1,
             child: TextField(
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
+              controller: sndInputController..text = "0",
               textAlign: TextAlign.right,
               decoration: InputDecoration(
-                  suffixIconConstraints:
-                      const BoxConstraints(minWidth: 0, minHeight: 0),
-                  suffixIcon: Text(suffix),
-                  border: InputBorder.none,
-                  hintText: '0'),
+                suffixIconConstraints:
+                    const BoxConstraints(minWidth: 0, minHeight: 0),
+                suffixIcon: Text(suffix),
+                border: InputBorder.none,
+              ),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              onAddClick();
+              onAddClick(fstInputController.text, sndInputController.text);
             },
           ),
         ],
@@ -101,7 +130,7 @@ class _CostsPageState extends State<CostsPage> {
                 Text('$value $suffix'),
                 IconButton(
                   color: Colors.black,
-                  icon: const Icon(Icons.highlight_remove_outlined),
+                  icon: const Icon(Icons.clear),
                   onPressed: () {
                     onDeleteClick();
                   },
@@ -128,7 +157,8 @@ class _CostsPageState extends State<CostsPage> {
     );
   }
 
-  Widget _inputWithLabel(String labelText, String inputText) {
+  Widget _inputWithLabel(String labelText, String inputText,
+      Function(String value) onValueChange) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -143,12 +173,23 @@ class _CostsPageState extends State<CostsPage> {
             flex: 1,
             child: Row(
               children: [
-                const Flexible(
+                Flexible(
                     child: SizedBox(
                   height: 30.0,
                   width: 50.0,
-                  child: TextField(
-                      textAlign: TextAlign.right, decoration: smallInputDec),
+                  child: TextFormField(
+                      initialValue: "0.0",
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d+\.?\d{0,2}')),
+                      ],
+                      onChanged: (value) {
+                        onValueChange(value);
+                      },
+                      textAlign: TextAlign.right,
+                      decoration: smallInputDec),
                 )),
                 Text('   $inputText'),
               ],
@@ -156,6 +197,8 @@ class _CostsPageState extends State<CostsPage> {
       ]),
     );
   }
+
+  // --------------------------- Content
 
   Widget _controlsBody() {
     return Container(
@@ -168,7 +211,7 @@ class _CostsPageState extends State<CostsPage> {
       child: Column(
         children: [
           _simpleLabel("Pasażerowie"),
-          _complexInput("Nazwa pasażera", " km", () {}),
+          _complexInput("Nazwa pasażera", " km", _onAddPassenger),
           Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: ListView.builder(
@@ -180,10 +223,12 @@ class _CostsPageState extends State<CostsPage> {
               itemCount: 5,
             ),
           ),
-          _inputWithLabel("Cena paliwa:", "zł"),
-          _inputWithLabel("Spalanie:", "l/100km"),
+          _inputWithLabel("Cena paliwa:", "zł", _onFuelCostChange),
+          _inputWithLabel("Spalanie:", "l/100km", _onCombustionChange),
           _simpleLabel("Koszty dodatkowe"),
-          _complexInput("Nazwa kosztu dodatkowego", " zł", () {}),
+          _complexInput("Nazwa kosztu dodatkowego", " zł", _onAddPassenger),
+          Text('This is passanger data: $passengerData'),
+          Text('Number of errors: $error'),
           ListView.builder(
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
@@ -198,8 +243,6 @@ class _CostsPageState extends State<CostsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
     return SingleChildScrollView(child: _controlsBody());
   }
 }
