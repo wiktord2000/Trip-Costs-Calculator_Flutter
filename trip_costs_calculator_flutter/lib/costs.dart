@@ -6,8 +6,10 @@ import 'main.dart';
 class CostsPage extends StatefulWidget {
   const CostsPage(
       {super.key,
-      this.updateFuelPrice,
-      this.updateCombustion,
+      required this.updateFuelPrice,
+      required this.updateCombustion,
+      required this.fuelPrice,
+      required this.combustion,
       required this.passengers,
       required this.addPassenger,
       required this.deletePassenger,
@@ -30,6 +32,10 @@ class CostsPage extends StatefulWidget {
   // ignore: prefer_typing_uninitialized_variables
   final deleteAdditionalCost;
   // ignore: prefer_typing_uninitialized_variables
+  final fuelPrice;
+  // ignore: prefer_typing_uninitialized_variables
+  final combustion;
+  // ignore: prefer_typing_uninitialized_variables
   final List<AdditionalCost> additionalCosts;
 
   @override
@@ -41,10 +47,9 @@ class _CostsPageState extends State<CostsPage> {
 
   // Passenger add & delete
   void _onAddPassenger(String name, String mealage) {
-    if (name != "" && double.parse(mealage) > 0) {
+    if (name != "" && int.parse(mealage) > 0) {
       setState(() {
-        widget.addPassenger(
-            Passenger(name: name, mealage: double.parse(mealage)));
+        widget.addPassenger(Passenger(name: name, mealage: int.parse(mealage)));
       });
     }
   }
@@ -165,7 +170,10 @@ class _CostsPageState extends State<CostsPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(name),
+            Text(
+              name,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
             Row(
               children: [
                 Text(
@@ -200,7 +208,7 @@ class _CostsPageState extends State<CostsPage> {
   }
 
   Widget _inputWithLabel(String labelText, String inputText,
-      Function(String value) onValueChange) {
+      Function(String value) onValueChange, String initialValue) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -221,7 +229,7 @@ class _CostsPageState extends State<CostsPage> {
                   height: 30.0,
                   width: 50.0,
                   child: TextFormField(
-                      initialValue: "0.0",
+                      initialValue: initialValue,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
@@ -264,15 +272,17 @@ class _CostsPageState extends State<CostsPage> {
                     child: _universalCard(
                         widget.passengers[index].id,
                         widget.passengers[index].name,
-                        widget.passengers[index].mealage,
+                        widget.passengers[index].mealage.toDouble(),
                         true,
                         _onDeletePassenger));
               },
               itemCount: widget.passengers.length,
             ),
           ),
-          _inputWithLabel("Cena paliwa:", "zł", _onFuelCostChange),
-          _inputWithLabel("Spalanie:", "l/100km", _onCombustionChange),
+          _inputWithLabel("Cena paliwa:", "zł", _onFuelCostChange,
+              widget.fuelPrice.toString()),
+          _inputWithLabel("Spalanie:", "l/100km", _onCombustionChange,
+              widget.combustion.toString()),
           _simpleLabel("Koszty dodatkowe"),
           _complexInput(
               "Nazwa kosztu dodatkowego", " zł", _onAddAdditionalCost),

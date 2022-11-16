@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'costs.dart';
 import 'calculate.dart';
@@ -11,7 +10,7 @@ void main() {
 class Passenger {
   String id = "P_${Random().nextDouble()}";
   String name;
-  double mealage = 0.0;
+  int mealage = 0;
 
   Passenger({required this.name, required this.mealage});
 }
@@ -45,7 +44,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage(
       {super.key,
-      required this.title}); // Uwaga: Wywaliłem const, żebby passangers działało
+      required this.title}); // Uwaga: Wywaliłem const, żebby passengers działało
 
   final String title;
 
@@ -54,34 +53,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // Page change functionality
-  int _selectedIndex = 0;
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  // Passengers list
-  final List<Passenger> passangers = [
-    Passenger(name: "Wiktor", mealage: 120),
-    Passenger(name: "Szymon", mealage: 80),
-    Passenger(name: "Adrian", mealage: 60)
-  ];
-  void _addPassenger(Passenger passenger) {
-    setState(() {
-      passangers.add(passenger);
-    });
-  }
-
-  void _deletePassenger(String id) {
-    setState(() {
-      passangers.removeWhere((element) => element.id == id);
-    });
-  }
-
   // Additional Costs list
-  final List<AdditionalCost> additionalCosts = [
+  List<AdditionalCost> additionalCosts = [
     AdditionalCost(name: "Autostrada", price: 150.0),
     AdditionalCost(name: "Postój", price: 80.0),
     AdditionalCost(name: "Stłuczka", price: 660.0)
@@ -95,6 +68,24 @@ class _MyHomePageState extends State<MyHomePage> {
   void _deleteAdditionalCost(String id) {
     setState(() {
       additionalCosts.removeWhere((element) => element.id == id);
+    });
+  }
+
+  // Passengers list
+  List<Passenger> passengers = [
+    Passenger(name: "Wiktor", mealage: 120),
+    Passenger(name: "Szymon", mealage: 80),
+    Passenger(name: "Adrian", mealage: 60)
+  ];
+  void _addPassenger(Passenger passenger) {
+    setState(() {
+      passengers.add(passenger);
+    });
+  }
+
+  void _deletePassenger(String id) {
+    setState(() {
+      passengers.removeWhere((element) => element.id == id);
     });
   }
 
@@ -114,7 +105,68 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  static const List<int> passengers = <int>[5, 7, 4, 8, 5];
+  // Page change functionality
+  int _selectedIndex = 0;
+  // To compute when view change
+  List<AdditionalCost> additionalCostsPerPassenger = [];
+  double additionalCostsSumPerPassenger = 0.0;
+  List<double> passengersFuelCosts = [];
+  double additionalCostsSum = 0.0;
+  double fuelCost = 0.0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      // Target page index
+      _selectedIndex = index;
+    });
+
+    // Compute fuel cost per passenger
+    List<Passenger> sortedPassengers = List.from(passengers);
+    sortedPassengers.sort((a, b) => a.mealage - b.mealage);
+
+    int lastMealage = 0;
+    double lastFuelCost = 0.0;
+    passengersFuelCosts = List.filled(sortedPassengers.length, 0.0);
+
+    while (sortedPassengers.isNotEmpty) {
+      Passenger currPass = sortedPassengers[0];
+      int index = passengers.indexWhere((element) => element.id == currPass.id);
+
+      double nextIntervalPrice =
+          (currPass.mealage - lastMealage) * (_fuelPrice * _combustion / 100);
+      double currFuelCost =
+          lastFuelCost + nextIntervalPrice / sortedPassengers.length;
+
+      lastMealage = currPass.mealage;
+      lastFuelCost = currFuelCost;
+
+      passengersFuelCosts[index] = currFuelCost;
+      sortedPassengers.removeAt(0);
+    }
+
+    // Compute fuel cost
+    fuelCost = 0.0;
+    for (var element in passengersFuelCosts) {
+      fuelCost += element;
+    }
+
+    // Additional cost per passenger
+    additionalCostsPerPassenger = additionalCosts
+        .map((e) =>
+            AdditionalCost(name: e.name, price: e.price / passengers.length))
+        .toList();
+
+    // Sum of additional costs
+    additionalCostsSum = 0.0;
+    for (var element in additionalCosts) {
+      additionalCostsSum += element.price;
+    }
+    // Sum of additional costs per passenger
+    additionalCostsSumPerPassenger = 0.0;
+    for (var element in additionalCostsPerPassenger) {
+      additionalCostsSumPerPassenger += element.price;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,15 +180,25 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: <Widget>[
         CostsPage(
-            passengers: passangers,
-            addPassenger: _addPassenger,
-            deletePassenger: _deletePassenger,
-            additionalCosts: additionalCosts,
-            addAdditionalCost: _addAdditionalCost,
-            deleteAdditionalCost: _deleteAdditionalCost,
-            updateFuelPrice: _updateFuelPrice,
-            updateCombustion: _updateCombustion), // CostsPage
-        const CalculatePage(passengers: passengers) // CalculatePage
+          passengers: passengers,
+          addPassenger: _addPassenger,
+          deletePassenger: _deletePassenger,
+          additionalCosts: additionalCosts,
+          addAdditionalCost: _addAdditionalCost,
+          deleteAdditionalCost: _deleteAdditionalCost,
+          updateFuelPrice: _updateFuelPrice,
+          updateCombustion: _updateCombustion,
+          combustion: _combustion,
+          fuelPrice: _fuelPrice,
+        ), // CostsPage
+        CalculatePage(
+          additionalCostsPerPassenger: additionalCostsPerPassenger,
+          passengers: passengers,
+          passengersFuelCosts: passengersFuelCosts,
+          additionalCostsSumPerPassenger: additionalCostsSumPerPassenger,
+          additionalCostsSum: additionalCostsSum,
+          fuelCost: fuelCost,
+        ) // CalculatePage
       ].elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
