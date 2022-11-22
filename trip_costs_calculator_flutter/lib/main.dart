@@ -23,6 +23,7 @@ class AdditionalCost {
   AdditionalCost({required this.name, required this.price});
 }
 
+// App
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -53,12 +54,19 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // Initial data
   // Additional Costs list
   List<AdditionalCost> additionalCosts = [
     AdditionalCost(name: "Autostrada", price: 150.0),
     AdditionalCost(name: "Postój", price: 80.0),
-    AdditionalCost(name: "Stłuczka", price: 660.0)
   ];
+  // Passengers list
+  List<Passenger> passengers = [
+    Passenger(name: "Wiktor", mealage: 120),
+    Passenger(name: "Szymon", mealage: 80),
+    Passenger(name: "Adrian", mealage: 60)
+  ];
+
   void _addAdditionalCost(AdditionalCost additionalCost) {
     setState(() {
       additionalCosts.add(additionalCost);
@@ -71,12 +79,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  // Passengers list
-  List<Passenger> passengers = [
-    Passenger(name: "Wiktor", mealage: 120),
-    Passenger(name: "Szymon", mealage: 80),
-    Passenger(name: "Adrian", mealage: 60)
-  ];
   void _addPassenger(Passenger passenger) {
     setState(() {
       passengers.add(passenger);
@@ -107,12 +109,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Page change functionality
   int _selectedIndex = 0;
+
   // To compute when view change
   List<AdditionalCost> additionalCostsPerPassenger = [];
   double additionalCostsSumPerPassenger = 0.0;
   List<double> passengersFuelCosts = [];
   double additionalCostsSum = 0.0;
-  double fuelCost = 0.0;
+  double fuelCost = 0.0; // combustion*fuelPrice*maxMealage
 
   void _onItemTapped(int index) {
     setState(() {

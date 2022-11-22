@@ -76,6 +76,7 @@ class _CostsPageState extends State<CostsPage> {
     });
   }
 
+  // Seting up the fuel and combustion
   void _onFuelCostChange(String value) {
     widget.updateFuelPrice(double.parse(value));
   }
@@ -251,7 +252,7 @@ class _CostsPageState extends State<CostsPage> {
 
   // --------------------------- Content
 
-  Widget _controlsBody() {
+  Widget _costsView() {
     return Container(
       width: MediaQuery.of(context).size.width,
       constraints: BoxConstraints(
@@ -306,6 +307,6 @@ class _CostsPageState extends State<CostsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(child: _controlsBody());
+    return SingleChildScrollView(child: _costsView());
   }
 }

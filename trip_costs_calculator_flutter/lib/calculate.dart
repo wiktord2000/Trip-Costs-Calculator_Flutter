@@ -199,7 +199,7 @@ class _CalculatePageState extends State<CalculatePage> {
     );
   }
 
-  Widget _listViewBody() {
+  Widget _calculateView() {
     return Container(
       color: Colors.grey[400],
       constraints: BoxConstraints(
@@ -232,6 +232,6 @@ class _CalculatePageState extends State<CalculatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(child: _listViewBody());
+    return SingleChildScrollView(child: _calculateView());
   }
 }
